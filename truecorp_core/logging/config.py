@@ -14,6 +14,8 @@ TZ = timezone(timedelta(hours=7), "Asia/Bangkok")
 
 ARCHIVE_DIR_NAME = "archive"
 STATE_DIR_NAME = ".logging_state"
+# logger name of the library's own housekeeping lines (rotated/retention/recovery notices)
+NOTICE_NAME = "truecorp.TRUECORP_LOGGING"
 LEVELS = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "CRITICAL": 50}
 ROTATION_MODES = ("DAILY", "INTERVAL_DAYS")
 # Always redacted; user supplied ``redact_fields`` are added to these, never replace them.

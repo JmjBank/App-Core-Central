@@ -9,7 +9,7 @@ import logging
 import re
 from datetime import datetime
 
-from .config import TZ
+from .config import NOTICE_NAME, TZ
 from .context import get_run_context
 from .security import quote_value, sanitize, to_text
 
@@ -28,7 +28,9 @@ class TextFormatter(logging.Formatter):
         return self._redactor.redact_text(text) if self._redactor else text
 
     def _fields(self, record):
-        fields = {k: v for k, v in get_run_context().items() if k != "run_id"}
+        # housekeeping notices must not inherit whatever job/tracking id the calling thread has set
+        ctx = {} if record.name == NOTICE_NAME else get_run_context()
+        fields = {k: v for k, v in ctx.items() if k != "run_id"}
         for key, value in record.__dict__.items():  # logger.info(..., extra={...}) wins over context
             if key not in _STD and key != "run_id" and not key.startswith("_"):
                 fields[key] = value
@@ -41,7 +43,8 @@ class TextFormatter(logging.Formatter):
         return parts
 
     def format(self, record):
-        run_id = record.__dict__.get("run_id") or get_run_context().get("run_id")
+        ctx_run = None if record.name == NOTICE_NAME else get_run_context().get("run_id")
+        run_id = record.__dict__.get("run_id") or ctx_run
         name = record.name[len(PREFIX):] if record.name.startswith(PREFIX) else record.name
         stamp = datetime.fromtimestamp(record.created, TZ).strftime("%Y-%m-%d %H:%M:%S")
         fields = self._fields(record)
