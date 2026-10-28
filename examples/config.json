@@ -1,0 +1,38 @@
+{
+  "application": {
+    "name": "APP_CANCEL_5534",
+    "environment": "PROD"
+  },
+  "logging": {
+    "enabled": true,
+    "level": "INFO",
+    "directory": "./logs",
+    "filename": "cancel_5534.log",
+    "console": {
+      "enabled": true,
+      "level": "WARNING"
+    },
+    "rotation": {
+      "enabled": true,
+      "mode": "INTERVAL_DAYS",
+      "interval_days": 7,
+      "compress": true,
+      "compression_level": 6
+    },
+    "retention": {
+      "enabled": true,
+      "days": 90,
+      "cleanup_on_startup": true
+    },
+    "security": {
+      "redact_sensitive_data": true,
+      "redact_fields": [
+        "password",
+        "authorization",
+        "access_token",
+        "secret",
+        "api_key"
+      ]
+    }
+  }
+}
