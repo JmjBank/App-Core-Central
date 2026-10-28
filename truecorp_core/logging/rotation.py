@@ -120,6 +120,8 @@ class RotatingGzipHandler(logging.FileHandler):
     def _flush_notices(self):
         notices, self._notices = self._notices, []
         for level, message in notices:
+            if level < self.level:  # housekeeping lines obey the configured level like everything else
+                continue
             record = logging.LogRecord(NOTICE_NAME, level, __file__, 0, message, (), None)
             logging.FileHandler.emit(self, record)
 
@@ -258,7 +260,10 @@ class RotatingGzipHandler(logging.FileHandler):
     def _cleanup(self, now):
         cfg = self.cfg
         res = retention.cleanup(cfg.archive_dir, cfg.stem, cfg.ret_days, today_bkk(now))
-        self._note(logging.INFO, "retention cleanup scanned=%d expired=%d deleted=%d failed=%d skipped=%d"
+        # A cron job that starts every minute must not add a line per start when nothing happened.
+        busy = res["expired"] or res["failed"] or res["errors"]
+        self._note(logging.INFO if busy else logging.DEBUG,
+                   "retention cleanup scanned=%d expired=%d deleted=%d failed=%d skipped=%d"
                    % (res["scanned"], res["expired"], res["deleted"], res["failed"], res["skipped"]))
         for error in res["errors"]:
             self._note(logging.WARNING, "retention: %s" % error)
